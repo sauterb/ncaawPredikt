@@ -1,0 +1,8 @@
+tensorflow
+numpy
+requests
+json
+streamlit
+keras
+scikit-learn
+matplotlib
