@@ -1,5 +1,4 @@
 import numpy as np
-from tensorflow import keras
 from keras.models import Sequential
 from keras.layers import LSTM, Dense, Dropout, InputLayer, SimpleRNN
 from sklearn.model_selection import train_test_split
