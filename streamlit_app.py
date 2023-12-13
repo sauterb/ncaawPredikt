@@ -114,7 +114,7 @@ if __name__ == '__main__':
     elif about_button:
         about_me()
     elif schedule_button:
-        ncaaw_model = load_model('ncaaw_model.keras')
+        ncaaw_model = load_model('ncaaw_model.h5')
         X_current = dp.get_current_year(use_API=False)
         st.session_state.predictions_text = dp.make_predictions(X_current, ncaaw_model)
         st.header("Live Predictions")
@@ -126,7 +126,7 @@ if __name__ == '__main__':
         live_results(newest_results=st.session_state.predictions_text, selected_team=st.session_state.selected_team)
     elif update_button:
         print("Update button pressed!")
-        ncaaw_model = load_model('ncaaw_model.keras')
+        ncaaw_model = load_model('ncaaw_model.h5')
         X_current = dp.get_current_year(use_API=True)
         st.session_state.predictions_text = dp.make_predictions(X_current, ncaaw_model)
         st.header("Live Predictions")
