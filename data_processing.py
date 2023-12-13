@@ -75,6 +75,7 @@ class teamSeason:
 
 
 team_list = [
+    teamSeason("Colorado Buffaloes"),
     teamSeason("Washington State Cougars"),
     teamSeason("Washington Huskies"),
     teamSeason("Oregon State Beavers"),
@@ -85,7 +86,6 @@ team_list = [
     teamSeason("UCLA Bruins"),
     teamSeason("Arizona State Sun Devils"),
     teamSeason("Arizona Wildcats"),
-    teamSeason("Colorado Buffaloes"),
     teamSeason("Utah Utes"),
     teamSeason("Michigan Wolverines"),
     teamSeason("Ohio State Buckeyes"),
@@ -307,7 +307,7 @@ def make_predictions(X, model):
     predictions = model.predict(X, batch_size=32, use_multiprocessing=True, verbose=True)
     final_predictions = np.round(100 * np.asarray([sequence[-1][0] for sequence in predictions]),decimals=1)
 
-    upcoming_games = "---UPCOMING GAMES FOR ALL POWER 5 TEAMS---\n"
+    upcoming_games = {}
 
     for i,team in enumerate(team_list):
         team.next_game_percentage = final_predictions[i]
@@ -317,11 +317,15 @@ def make_predictions(X, model):
         elif team.next_game_percentage < 0.1:
             team.next_game_percentage = 0.1
         foo = str(team.next_game_percentage)
-        upcoming_games += (f"\n\n\n\n{team.name}, next game: \n\n{team.next_game['away']['name']} vs. {team.next_game['home']['name']}"
+        if team.next_game_percentage > 50:
+            color='green'
+        elif team.next_game_percentage < 50:
+            color='red'
+        upcoming_games[team.name] = (f"\n\n\n\n**{team.name}**, next game: \n\n{team.next_game['away']['name']} vs. {team.next_game['home']['name']}"
                            f"\n\nIt will be on {team.next_game['scheduled'][5:7]}/{team.next_game['scheduled'][8:10]}/{team.next_game['scheduled'][0:4]} at {team.next_game['scheduled'][11:19]} in {team.next_game['venue']['city']}, {team.next_game['venue']['state']}"
-                           f"\n\nNNostradamus predicts {team.name} have a {foo}% chance of winning")
+                           f"\n\n:rainbow[NNostradamus] predicts The {team.name} have a **:{color}[{foo}%]** chance of winning")
 
-    print(upcoming_games)
+    # print(upcoming_games)
     return upcoming_games
 
 if __name__ == '__main__':

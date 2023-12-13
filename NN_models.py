@@ -46,6 +46,7 @@ def RNN_model(X,y):
         Dense(64, activation='relu'),
         Dropout(rate=0.25),
         Dense(16, activation='relu'),
+        # TODO: adjust sigmoid so predictions aren't so "certain"
         Dense(1, activation='sigmoid')
     ])
 
