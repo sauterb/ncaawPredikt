@@ -1,7 +1,7 @@
 # ncaawPredikt
+Repo for Bailey Sauter's CSCI 5922 final project: NNostradamus, the NCAA WBB predictor.
 
 NCAAW API Key: 7fv6azmbwjbjb64c2dqbd88w
 
-Odds Comparison API Key: a2map4by8ngyzd88cnp87k65
-
-Documentation: https://developer.sportradar.com/docs/read/basketball/NCAA_Womens_Basketball_v8#ncaa-womens-basketball-api-map
+API Documentation: https://developer.sportradar.com/docs/read/basketball/NCAA_Womens_Basketball_v8#ncaa-womens-basketball-api-map
+Keras Documentation: https://keras.io/guides/
