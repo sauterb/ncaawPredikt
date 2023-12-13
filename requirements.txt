@@ -5,3 +5,4 @@ streamlit
 keras
 scikit-learn
 matplotlib
+keras.models.load_model
