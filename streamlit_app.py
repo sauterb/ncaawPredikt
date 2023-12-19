@@ -3,7 +3,7 @@
 
 import streamlit as st
 import data_processing as dp
-from keras.models import load_model
+from keras.saving import load_model
 from data_processing import team_list
 
 #---Various required sections for project website---
