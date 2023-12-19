@@ -1,10 +1,9 @@
 # CSCI 5922 Final Project
 # Bailey Sauter, Fall 2023
 
-import tensorflow as tf
 import streamlit as st
 import data_processing as dp
-from tf.keras.models import load_model
+from keras.models import load_model
 from data_processing import team_list
 
 #---Various required sections for project website---
