@@ -1,20 +1,19 @@
+# CSCI 5922 Final Project
+# Bailey Sauter, Fall 2023
+
 import numpy as np
 import requests
 import json
 from NN_models import RNN_model
 
+# Global variables for API calls
 access_level = 'trial'
 version = 'v8'
 language_code = 'en'
 ncaawb_season_type = 'REG'
 format = 'json'
 
-class dateFormat:
-    def __init__(self, mm, dd, yyyy):
-        self.month = mm
-        self.day = dd
-        self.year = yyyy
-
+# Custom class for storing team information
 class teamSeason:
     def __init__(self, name):
         self.name = name
@@ -43,10 +42,12 @@ class teamSeason:
         self.point_differential = np.zeros(num_games)
         self.opponent_rpi = np.zeros(num_games)
 
+        # Get team's own ranking and store as sequence
         for ranking in rpi_data['rankings']:
             if ranking['name'] in self.name and ranking['market'] in self.name:
                 self.self_rpi = np.asarray([ranking['rank'] for game in self.games])
 
+        # Iterate over games in a season and extract feature arrays
         for i,game in enumerate(self.games):
             if game['status'] == 'closed':
                 self.point_differential[i] = sum(self.margins) / (i + 1)
@@ -73,8 +74,9 @@ class teamSeason:
                 else:
                     self.wins_bool[i] = 1
 
-
+# List of teams used in this project (Power 5)
 team_list = [
+    teamSeason("Colorado Buffaloes"),
     teamSeason("Washington State Cougars"),
     teamSeason("Washington Huskies"),
     teamSeason("Oregon State Beavers"),
@@ -85,7 +87,6 @@ team_list = [
     teamSeason("UCLA Bruins"),
     teamSeason("Arizona State Sun Devils"),
     teamSeason("Arizona Wildcats"),
-    teamSeason("Colorado Buffaloes"),
     teamSeason("Utah Utes"),
     teamSeason("Michigan Wolverines"),
     teamSeason("Ohio State Buckeyes"),
@@ -144,6 +145,7 @@ team_list = [
     teamSeason("Wake Forest Demon Deacons")
 ]
 
+# Use API to fetch NCAAW season data
 def get_NCAAW_season_data(file_saveName, yyyy):
 
     year = yyyy
@@ -162,6 +164,7 @@ def get_NCAAW_season_data(file_saveName, yyyy):
     else:
         print("Error:", response.status_code, response.text)
 
+# Use API to fetch NCAAW RPI data
 def get_NCAAW_RPI_data(file_saveName:str, yyyy):
     api_url = f"https://api.sportradar.com/ncaawb/{access_level}/{version}/{language_code}" \
               f"/rpi/{yyyy}/rankings.{format}?api_key=7fv6azmbwjbjb64c2dqbd88w"
@@ -177,6 +180,7 @@ def get_NCAAW_RPI_data(file_saveName:str, yyyy):
     else:
         print("Error:", response.status_code, response.text)
 
+# Use API to fetch NCAAW scheduling data
 def get_NCAAW_schedule(file_saveName:str, yyyy):
     season_year = yyyy
 
@@ -194,11 +198,10 @@ def get_NCAAW_schedule(file_saveName:str, yyyy):
     else:
         print("Error:", response.status_code, response.text)
 
+# Used to extract the X and y vectors used to train the model
 def clean_and_prepare_data():
     use_api = False
 
-    # TODO: could add more years
-    # Just for 2022 so far
     year = "2022"
     if use_api:
         print("Using one API")
@@ -214,7 +217,6 @@ def clean_and_prepare_data():
     with open(f"ncaaw_rpi_{year}.json", 'r') as json_file:
         ncaaw_rpi_data = json.load(json_file)
 
-    # TODO: may be able to scrape all teams pretty easily
     for game in ncaaw_schedule_data['games']:
         for team in team_list:
             if game['home']['name'] == team.name or game['away']['name'] == team.name:
@@ -225,11 +227,14 @@ def clean_and_prepare_data():
     for team in team_list:
         team.parse_all_games(ncaaw_rpi_data)
 
+    # Features and labels arrays
     X = list([])
     y = list([])
 
+    # Sequences must be homogoneous, so this checks that teams are all capped to same length of season
     uniform_num_games = min([len(team.games) for team in team_list])
 
+    # Extracts features as sequences of games over the course of the season
     snapshot_length = 7
     stride_length = 5
     for team in team_list:
@@ -249,8 +254,9 @@ def clean_and_prepare_data():
     y = np.asarray(y)
     return X,y
 
+# Gets team information and cleans data for current year to make live predictions
 def get_current_year(use_API:bool):
-    # TODO: change so there is a button for API refresh?
+    # Boolean tells whether to refresh the API (if teams have played more games, e.g.)
     use_api = use_API
 
     year = "2023"
@@ -312,16 +318,19 @@ def percent_to_moneyline(percent):
         decimal = 1-decimal
 
     moneyline = 100/decimal - 100
+    moneyline = round(moneyline, 0)
 
     return multiplier + str(moneyline)
 
-
+# Make predictions for current season
 def make_predictions(X, model):
     predictions = model.predict(X, batch_size=32, use_multiprocessing=True, verbose=True)
     final_predictions = np.round(100 * np.asarray([sequence[-1][0] for sequence in predictions]),decimals=1)
 
-    upcoming_games = "---UPCOMING GAMES FOR ALL POWER 5 TEAMS---\n"
+    # Make dictionary of upcoming games that website can reference
+    upcoming_games = {}
 
+    # Clamp each game prediction and output the correctly formatted text
     for i,team in enumerate(team_list):
         team.next_game_percentage = final_predictions[i]
         # No such thing as a guarantee
@@ -330,20 +339,21 @@ def make_predictions(X, model):
         elif team.next_game_percentage < 0.1:
             team.next_game_percentage = 0.1
         foo = str(team.next_game_percentage)
-        upcoming_games += (f"\n\n\n\n{team.name}, next game: \n\n{team.next_game['away']['name']} vs. {team.next_game['home']['name']}"
-                           f"\n\nIt will be on {team.next_game['scheduled'][5:7]}/{team.next_game['scheduled'][8:10]}/{team.next_game['scheduled'][0:4]} at {team.next_game['scheduled'][11:19]} in {team.next_game['venue']['city']}, {team.next_game['venue']['state']}"
-                           f"\n\nNNostradamus predicts {team.name} have a {foo}% chance of winning"
-                           f"\n\n(predicted line {percent_to_moneyline(team.next_game_percentage)}), bet if sportsbook moneyline is >")
+        if team.next_game_percentage > 50:
+            color='green'
+        elif team.next_game_percentage < 50:
+            color='red'
+        upcoming_games[team.name] = (f"\n\n\n\n**{team.name}**, next game: \n\n{team.next_game['away']['name']} vs. {team.next_game['home']['name']}"
+                           f"\n\nWill take place on {team.next_game['scheduled'][5:7]}/{team.next_game['scheduled'][8:10]}/{team.next_game['scheduled'][0:4]} at {team.next_game['scheduled'][11:19]} in {team.next_game['venue']['city']}, {team.next_game['venue']['state']}"
+                           f"\n\n:rainbow[NNostradamus] predicts The {team.name} have a **:{color}[{foo}%]** chance of winning"
+                           f"\n\nPredicted moneyline = {percent_to_moneyline(team.next_game_percentage)}, bet if moneyline higher")
 
-    print(upcoming_games)
+    # print(upcoming_games)
     return upcoming_games
 
-
+# This only needs run to update the model, otherwise Streamlit project will access saved model
 if __name__ == '__main__':
-    # TODO: takes a long time and gets weird if you try to run it twice, just save as joblib
     # ---Data Analysis Section---
-    # TODO: if doing other years could just call this multiple times and append X/y
-    # 2021 not COVID year
     X, y = clean_and_prepare_data()
     ncaaw_model = RNN_model(X, y)
-    ncaaw_model.save('ncaaw_model.h5')
+    ncaaw_model.save('ncaaw_model.keras')
