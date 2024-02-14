@@ -318,7 +318,7 @@ def percent_to_moneyline(percent):
         decimal = 1-decimal
 
     moneyline = 100/decimal - 100
-    moneyline = round(moneyline, 0)
+    moneyline = round(moneyline, -1)
 
     return multiplier + str(moneyline)
 
