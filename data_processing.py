@@ -151,7 +151,7 @@ def get_NCAAW_season_data(file_saveName, yyyy):
     year = yyyy
 
     api_url = f"https://api.sportradar.com/ncaawb/{access_level}/{version}/{language_code}" \
-              f"/seasons/{year}/{ncaawb_season_type}/standings.{format}?api_key=7fv6azmbwjbjb64c2dqbd88w"
+              f"/seasons/{year}/{ncaawb_season_type}/standings.{format}?api_key=kn74b3uaxvtvsgw94qm4fz5r"
 
     response = requests.get(api_url)
 
@@ -167,7 +167,7 @@ def get_NCAAW_season_data(file_saveName, yyyy):
 # Use API to fetch NCAAW RPI data
 def get_NCAAW_RPI_data(file_saveName:str, yyyy):
     api_url = f"https://api.sportradar.com/ncaawb/{access_level}/{version}/{language_code}" \
-              f"/rpi/{yyyy}/rankings.{format}?api_key=7fv6azmbwjbjb64c2dqbd88w"
+              f"/rpi/{yyyy}/rankings.{format}?api_key=kn74b3uaxvtvsgw94qm4fz5r"
 
     response = requests.get(api_url)
 
@@ -185,7 +185,7 @@ def get_NCAAW_schedule(file_saveName:str, yyyy):
     season_year = yyyy
 
     api_url = f"https://api.sportradar.com/ncaawb/{access_level}/{version}/{language_code}" \
-              f"/games/{season_year}/{ncaawb_season_type}/schedule.{format}?api_key=7fv6azmbwjbjb64c2dqbd88w"
+              f"/games/{season_year}/{ncaawb_season_type}/schedule.{format}?api_key=kn74b3uaxvtvsgw94qm4fz5r"
 
     response = requests.get(api_url)
 
